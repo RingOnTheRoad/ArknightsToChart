@@ -10,7 +10,10 @@ target_path = r'D:/BilibiliUps/工程/2024.1/明日方舟时装系列2024/原始
 original_filename = '干员时装.json'
 operator_count_list = []
 operator_name_list = []
+fashion_count_list = []
+fashion_name_list = []
 bar_list = []
+bar_list_f = []
 time_list = []
 operator_list = []
 date_list = []
@@ -18,10 +21,13 @@ key_list = []
 value_list = []
 same_flag = False
 special_flag = False
+special_flag_f = False
+same_flag_f = False
 date_temp = '2019/5/1'
 last_flag = '主修领域'
 special_title = ['百炼', '承曦', '纯烬', '淬羽', '涤火', '归溟', '寒芒', '火龙S', '假日威龙',
                  '缄默', '琳琅', '麒麟R', '圣约', '焰影', '炎狱', '耀骑士', '濯尘', '浊心']
+same_serial = ['0011']
 
 
 # 刷新干员出现次数
@@ -52,9 +58,36 @@ def refresh_operator(item):
                     break
 
 
+def refresh_fashion(item):
+    global same_flag_f, special_flag_f
+    # 循环干员名单
+    for name in fashion_name_list:
+        # 同名干员
+        if item['所属系列'] == name:
+            index = fashion_name_list.index(name)
+            fashion_count_list[index] = item['系列积累次数']
+            same_flag_f = True
+        # 不同名
+        else:
+            # 同系列筛选
+            for title in same_serial:
+                if title in item['所属系列']:
+                    name_temp = title + '系列'
+                    # 变为同名系列后添加到列表
+                    try:
+                        index = fashion_name_list.index(name_temp)
+                        fashion_count_list[index] = item['系列积累次数']
+                        same_flag_f = True
+                    except ValueError:
+                        fashion_count_list.append('1')
+                        fashion_name_list.append(name_temp)
+                        special_flag_f = True
+                    break
+
+
 # 获得时间线的Bar数据
 def export_bar():
-    global date_temp, same_flag, special_flag
+    global date_temp, same_flag, special_flag, same_flag_f, special_flag_f
 
     # 打开json文件获取数据
     with open(target_path + '/' + original_filename, 'r', encoding='utf-8') as file:
@@ -66,6 +99,8 @@ def export_bar():
         if item['实装日期'] == date_temp:
             # 干员名称重合则刷新干员积累次数,异格则单独添加
             refresh_operator(item)
+            # 刷新服装系列的积累次数
+            refresh_fashion(item)
             # 新干员直接添加(不存在重复和异格时)
             if not same_flag | special_flag:
                 operator_count_list.append(item['干员积累次数'])
@@ -74,12 +109,24 @@ def export_bar():
                 same_flag = False
                 special_flag = False
 
+            # 新服装直接添加(不存在重复时)
+            if not same_flag_f:
+                fashion_count_list.append(item['系列积累次数'])
+                fashion_name_list.append(item['所属系列'])
+            else:
+                same_flag_f = False
+                special_flag_f = False
+
             # 最后提交
             if item['服装名称'] == last_flag:
                 bar = Bar.add_bar(date_temp.replace('/', '.'), save_path + '/Bar', date_temp,
                                   {"次数": operator_count_list},
                                   {"名字": operator_name_list}, sorted_amount=20)
                 bar_list.append(bar)
+                bar = Bar.add_bar(date_temp.replace('/', '.'), save_path + '/Bar', date_temp,
+                                  {"次数": fashion_count_list},
+                                  {"名字": fashion_name_list}, sorted_amount=20)
+                bar_list_f.append(bar)
 
         # 不同日期组
         else:
@@ -87,16 +134,28 @@ def export_bar():
             bar = Bar.add_bar(date_temp.replace('/', '.'), save_path + '/Bar', date_temp, {"次数": operator_count_list},
                               {"名字": operator_name_list}, sorted_amount=20)
             bar_list.append(bar)
+            bar = Bar.add_bar(date_temp.replace('/', '.'), save_path + '/Bar', date_temp, {"次数": fashion_count_list},
+                              {"名字": fashion_name_list}, sorted_amount=20)
+            bar_list_f.append(bar)
+
             # 修改日期缓存
             date_temp = item['实装日期']
             # 干员名称重合则刷新干员积累次数
             refresh_operator(item)
+            # 服装重复次数刷新
+            refresh_fashion(item)
             # 新干员直接添加(不存在重复时)
             if not same_flag:
                 operator_count_list.append(item['干员积累次数'])
                 operator_name_list.append(item['干员名称'])
             else:
                 same_flag = False
+            # 新服装直接添加(不存在重复时)
+            if not same_flag_f:
+                fashion_count_list.append(item['系列积累次数'])
+                fashion_name_list.append(item['所属系列'])
+            else:
+                same_flag_f = False
 
 
 # 获得单独的时间
@@ -116,6 +175,7 @@ def get_single_date():
 def export_timeline():
     get_single_date()
     TimeLine.add_timeline('ArknightsTimeline', save_path + '/' + 'Timeline', bar_list, date_list, line_interval=0.5)
+    TimeLine.add_timeline('ArknightsTimeline_f', save_path + '/' + 'Timeline', bar_list_f, date_list, line_interval=0.5)
 
 
 # 导出pie图

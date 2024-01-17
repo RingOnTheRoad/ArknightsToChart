@@ -64,7 +64,10 @@ def add_bar(file_name: str, path: str, bar_name: str, x_data: dict, y_data: dict
                         # print(f"数据绑定后:{data_list}")
 
                         # 数据条件排序/筛选
-                        data_list.sort(key=lambda element: element[sorted_index], reverse=sorted_reverse)
+
+                        data_list = sorted(data_list, key=lambda element: int(element[sorted_index]),
+                                           reverse=sorted_reverse)
+                        # data_list.sort(key=lambda element: element[sorted_index], reverse=sorted_reverse)
                         data_list = data_list[:sorted_amount]
                         # print(f"数据条件排序/筛选后:{data_list}")
 
@@ -179,13 +182,15 @@ def add_bar(file_name: str, path: str, bar_name: str, x_data: dict, y_data: dict
                         except Exception as e:
                             print(type(e))
                             print(e, "\nAn unexpected error occurs,bring the information output from the console and "
-                                           "contact the project manager Ring please (发生意料外的错误，请携带控制台输出的信息，联系该项目管理者Ring)")
+                                     "contact the project manager Ring please (发生意料外的错误，请携带控制台输出的信息，联系该项目管理者Ring)")
 
                     else:
-                        print("Make sure 'sorted_index' and 'sorted_amount' is 'int' type,and 'sorted_reverse' is 'bool' type (请确保'sorted_index'和'sorted_amount'为整数类型,'sorted_reverse'为布尔类型")
+                        print(
+                            "Make sure 'sorted_index' and 'sorted_amount' is 'int' type,and 'sorted_reverse' is 'bool' type (请确保'sorted_index'和'sorted_amount'为整数类型,'sorted_reverse'为布尔类型")
 
                 else:
-                    print("Dict's subclass type is wrong,use 'list' type please (字典中子类数据类型错误，请使用列表类型)")
+                    print(
+                        "Dict's subclass type is wrong,use 'list' type please (字典中子类数据类型错误，请使用列表类型)")
 
             else:
                 print("Axis data type is wrong,use 'dict' type please (轴数据类型错误，请使用字典类型)")
@@ -200,8 +205,11 @@ def add_bar(file_name: str, path: str, bar_name: str, x_data: dict, y_data: dict
 # 测试方法健壮性
 if __name__ == '__main__':
     # 模拟正常数据生成折线图
-    n_x_data = {"成绩": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "零花钱": [7, 1, -9, 5, 53, 12, -57, 3, 2, 67, 34, -86]}
-    n_y_data = {"name": ["小米", "小孩", "雷军", "周杰伦", "陶喆", "王家卫", "陈睿", "林俊杰", "张杰", "南拳妈妈", "阿米娅", "博士", ]}
+    n_x_data = {"成绩": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "零花钱": [7, 1, -9, 5, 53, 12, -57, 3, 2, 67, 34, -86]}
+    n_y_data = {
+        "name": ["小米", "小孩", "雷军", "周杰伦", "陶喆", "王家卫", "陈睿", "林俊杰", "张杰", "南拳妈妈", "阿米娅",
+                 "博士", ]}
     add_bar('3', 'D:/Mis/json/stock', '3', n_x_data, n_y_data)
 
     print("-------------------------𝕯𝖎𝖛𝖎𝖉𝖎𝖓𝖌 𝖑𝖎𝖓𝖊-------------------------")
